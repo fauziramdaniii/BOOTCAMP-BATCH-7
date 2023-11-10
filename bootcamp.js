@@ -21,6 +21,9 @@ fs.readFile('test.txt', 'utf-8', (err, data) => {
 // /*
 const prompt = require('prompt-sync')(); //import modul dari npm i prompt-sync
 const validator = require('validator'); //import modul dari npm i validator
+const fs = require('fs'); //import modul dari npm i validator
+
+let contact = []; //menampung data untuk convert ke json file
 
 const isName = prompt('What is Ur Name ? '); //buat pertanyaan inputan menggunakan prompt
 console.log('Halow ' + isName); //hasil dari variable const isName
@@ -44,5 +47,17 @@ do {
 } while (!validator.isEmail(email)); //condisi apabila no telpon salah di akan do(melkaukan lagi pertanyaan)
 
 console.log("Your Name " + isName + " With The Number Phone " + isNumber + " and Surel Is " + email  );
+
+//data aray yang di use untuk menampung data araay, dan conver string ke obj
+contact.push({
+    isName,
+    isNumber,
+    email
+}
+);
+
+const jsonData = JSON.stringify(contact); //mengonversi objek ke string
+fs.writeFileSync('contact.json', jsonData); //menulis ulang inputan
+
 // */
 // ============================== Materi 2 End ======================================= //
