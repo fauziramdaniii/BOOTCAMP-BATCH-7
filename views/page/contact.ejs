@@ -1,0 +1,27 @@
+    <div class="container mt-4 animated">
+        <h1>Contact Us</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% contact.forEach(contact=> { %>
+                    <tr>
+                        <td>
+                            <%= contact.name %>
+                        </td>
+                        <td>
+                            <%= contact.email %>
+                        </td>
+                    </tr>
+                    <% }) %>
+            </tbody>
+        </table>
+        <p>
+            Have questions or feedback? Feel free to reach out to us using the contact details above.
+        </p>
+        <!-- Add contact form or other contact information as needed -->
+    </div>

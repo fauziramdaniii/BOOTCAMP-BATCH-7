@@ -1,12 +1,13 @@
 // command.js
 const yargs = require("yargs");
+
 const {
   addContact,
   listContacts,
   showContactDetails,
   deleteContact,
   updateContact,
-} = require("./app");
+} = require("../controllers/crud");
 
 const argv = yargs
   .command({
@@ -84,3 +85,6 @@ const argv = yargs
   })
   .demandCommand()
   .help().argv;
+
+
+
