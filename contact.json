@@ -1,159 +1,62 @@
 [
   {
-    "isName": "fauzi",
-    "isNumber": "0895447747437",
-    "email": "uzi@gmail.com"
+    "name": "Fauzi Ramdani",
+    "phoneNumber": "sdf",
+    "email": "sdfadfads@gg.com",
+    "address": "sdf"
+  },
+  {
+    "name": "sdfdsf",
+    "phoneNumber": "dsfsaadsfds",
+    "email": "adsfasf@sdf.co",
+    "address": "sadfasd"
+  },
+  {
+    "name": "fsdafad",
+    "phoneNumber": "sdfsdafds",
+    "email": "adfsfsd@gfd.co",
+    "address": "afdsfads"
+  },
+  {
+    "name": "asdfdsf",
+    "phoneNumber": "sadfsadf",
+    "email": "dfasfasd@gmail.com",
+    "address": "sdfasdf"
+  },
+  {
+    "name": "SDFASDF",
+    "phoneNumber": "ADFSDF",
+    "email": "apawnibos@gmail.com",
+    "address": "ASF"
+  },
+  {
+    "name": "Fauzi Ramdani",
+    "phoneNumber": "0895337732828",
+    "email": "apawnibos@gmail.com",
+    "address": "asdf"
+  },
+  {
+    "name": "sdasf",
+    "phoneNumber": "dfasdfsa",
+    "email": "sdfdsaf@ksd.com",
+    "address": "sdfads"
+  },
+  {
+    "name": "Fauzi Ramdani",
+    "phoneNumber": "sdf",
+    "email": "sdfadfads@gg.com",
+    "address": "sdf"
+  },
+  {
+    "name": "sdfs",
+    "phoneNumber": "dsfasdf",
+    "email": "sdfadfads@gg.com",
+    "address": "sdafsdf"
   },
   {
     "name": "Fauzi Ramdani",
     "phoneNumber": "0895337732828",
     "email": "fauziramdhan38@gmail.com",
-    "address": "majalaya"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": "majalaya"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": "majalaya"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": null
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": null
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": null
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": "majalaya"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": "majalaya"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": "majalaya"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": "majalaya"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": "majalaya"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828"
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": null
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": "fauziramdhan38@gmail.com",
-    "address": null
-  },
-  {
-    "name": "Fauzi Ramdani",
-    "phoneNumber": "0895337732828",
-    "email": null,
-    "address": null
-  },
-  {
-    "name": "John",
-    "phoneNumber": "0895337732828",
-    "email": "john@example.com",
-    "address": "Street 123"
-  },
-  {
-    "name": "John",
-    "phoneNumber": "0895337732828",
-    "email": "john@example.com",
-    "address": "Street 123"
-  },
-  {
-    "name": "John",
-    "phoneNumber": "08953377382828",
-    "email": "john@ezxample.com",
-    "address": "Street 123"
-  },
-  {
-    "name": "mat",
-    "phoneNumber": "08953377382828",
-    "email": "john@example.com",
-    "address": "Street 123"
-  },
-  {
-    "name": "John",
-    "phoneNumber": "0895337732828",
-    "email": "john@example.com",
-    "address": "Street 12"
-  },
-  {
-    "name": "mathew",
-    "phoneNumber": "08953377382828",
-    "email": "mathew@example.com",
-    "address": "Street 12"
-  },
-  {
-    "name": "mamat",
-    "phoneNumber": "089533887878",
-    "email": "mat123@gmail.com",
-    "address": "cibaduyut"
+    "address": "sdf"
   }
 ]

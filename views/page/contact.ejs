@@ -1,27 +1,470 @@
-    <div class="container mt-4 animated">
-        <h1>Contact Us</h1>
-        <table class="table">
+<div class="container mt-4 animated">
+  <h1>Contact Us</h1>
+  <button
+    type="button"
+    class="btn btn-success"
+    data-toggle="modal"
+    data-target="#addContactModal"
+  >
+    Add Contact
+  </button>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone Number</th>
+        <th>Email</th>
+        <th>Address</th>
+        <th colspan="3" style="text-align: center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% data.forEach(data=> { %>
+      <tr
+        data-id="<%= data.name %>"
+        data-name="<%= data.name %>"
+        data-phonenumber="<%= data.phoneNumber %>"
+        data-email="<%= data.email %>"
+        data-address="<%= data.address %>"
+      >
+        <td><%= data.name %></td>
+        <td><%= data.phoneNumber %></td>
+        <td><%= data.email %></td>
+        <td><%= data.address %></td>
+
+        <td>
+          <button
+            type="button"
+            class="btn btn-warning"
+            data-toggle="modal"
+            data-target="#updateContactModal"
+            onclick="populateUpdateForm(this)"
+          >
+            Update
+          </button>
+        </td>
+        <td>
+          <button
+            type="button"
+            class="btn btn-danger"
+            onclick="deleteContact(this)"
+          >
+            Delete
+          </button>
+        </td>
+        <td>
+          <!-- Update the "Details" button in your loop -->
+          <button
+            type="button"
+            class="btn btn-info"
+            onclick="openDetailsModal(`<%= data.name %>`)"
+            data-toggle="modal"
+            data-target="#detailsContactModal"
+          >
+            Details
+          </button>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <p style="text-align: center">Thank You For Coming</p>
+
+  <!-- Add Contact Modal -->
+  <div
+    class="modal fade"
+    id="addContactModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="addContactModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">New Contact</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <% if(typeof error != "undefined") { %>
+
+          <div class="mt-5 mb-3">
+            <div
+              class="alert alert-warning alert-dismissible fade show"
+              role="alert"
+              id="addContactModal"
+            >
+              <% errors.forEach(error => { %>
+              <ul>
+                <li><%= error.msg %></li>
+              </ul>
+              <% }) %>
+
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+              ></button>
+            </div>
+          </div>
+
+          <% } else { %>
+          <form id="addContactForm" action="/contact" method="POST">
+            <div class="form-group">
+              <label for="name" class="col-form-label">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="phoneNumber" class="col-form-label"
+                >Phone Number</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="phoneNumber"
+                name="phoneNumber"
+                required
+              />
+              <!-- Display validation error message -->
+              <% if (typeof error !== "undefined" && error.phoneNumber) { %>
+              <div class="alert alert-danger" role="alert">
+                <%= error.phoneNumber.msg %>
+              </div>
+              <% } %>
+            </div>
+            <div class="form-group">
+              <label for="email" class="col-form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="address" class="col-form-label">Address</label>
+              <textarea
+                class="form-control"
+                id="address"
+                name="address"
+              ></textarea>
+            </div>
+          </form>
+          <% } %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+          <!-- <button type="submit" class="btn-close" aria-label="Close">Submit</button> -->
+          <button type="submit" class="btn btn-primary" form="addContactForm">
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Contact Modal -->
+  <div
+    class="modal fade"
+    id="addContactModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="addContactModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">New Contact</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+          <div class="mt-5 mb-3">
+            <div
+              class="alert alert-warning alert-dismissible fade show"
+              role="alert"
+              id="addContactErrorModal"
+              <!--
+              Add
+              an
+              ID
+              for
+              easy
+              manipulation
+              --
+            >
+              > <% errors.forEach(error => { %>
+              <ul>
+                <li><%= error.msg %></li>
+              </ul>
+              <% }) %>
+              <form id="addContactForm" action="/contact" method="POST">
+                <!-- Your form inputs go here -->
+              </form>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+                onclick="closeErrorModal()"
+                <!--
+                Add
+                an
+                onclick
+                handler
+                --
+              >
+                >
+              </button>
+            </div>
+          </div>
+          <% } else { %>
+          <form id="addContactForm" action="/contact" method="POST">
+            <!-- Your form inputs go here -->
+          </form>
+          <% } %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary" form="addContactForm">
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Contact Modal -->
+  <div
+    class="modal fade"
+    id="updateContactModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="updateContactModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Update Contact</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form
+            id="updateContactForm"
+            action="/contact/<%= data._name %>"
+            data-id=""
+          >
+            <div class="form-group">
+              <label for="name" class="col-form-label">Name</label>
+              <input type="text" class="form-control" id="updateName" />
+            </div>
+            <div class="form-group">
+              <label for="phoneNumber" class="col-form-label"
+                >Phone Number</label
+              >
+              <input type="text" class="form-control" id="updatePhoneNumber" />
+            </div>
+            <div class="form-group">
+              <label for="email" class="col-form-label">Email</label>
+              <input type="text" class="form-control" id="updateEmail" />
+            </div>
+            <div class="form-group">
+              <label for="address" class="col-form-label">Address</label>
+              <textarea class="form-control" id="updateAddress"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="updateContact()"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Contact Modal -->
+  <div
+    class="modal"
+    id="detailsContactModal"
+    aria-labelledby="myLargeModalLabel"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="detailsContactModalTitle">
+            Details Contact
+          </h4>
+          <button type="button" class="close" data-dismiss="modal">
+            &times;
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body">
+          <table class="table table-striped">
             <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                </tr>
+              <tr>
+                <th>Name</th>
+                <th>Phone Number</th>
+                <th>Email</th>
+                <th>Address</th>
+              </tr>
             </thead>
             <tbody>
-                <% contact.forEach(contact=> { %>
-                    <tr>
-                        <td>
-                            <%= contact.name %>
-                        </td>
-                        <td>
-                            <%= contact.email %>
-                        </td>
-                    </tr>
-                    <% }) %>
+              <tr>
+                <td id="detailsName"></td>
+                <td id="detailsPhoneNumber"></td>
+                <td id="detailsEmail"></td>
+                <td id="detailsAddress"></td>
+              </tr>
             </tbody>
-        </table>
-        <p>
-            Have questions or feedback? Feel free to reach out to us using the contact details above.
-        </p>
-        <!-- Add contact form or other contact information as needed -->
+          </table>
+        </div>
+        <!-- Modal footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
+
+<script>
+  function populateUpdateForm(button) {
+    const row = button.closest("tr");
+    const id = row.getAttribute("data-id");
+    const name = row.getAttribute("data-name");
+    const phoneNumber = row.getAttribute("data-phonenumber");
+    const email = row.getAttribute("data-email");
+    const address = row.getAttribute("data-address");
+
+    document.getElementById("updateContactForm").setAttribute("data-id", id);
+    document.getElementById("updateName").value = name;
+    document.getElementById("updatePhoneNumber").value = phoneNumber;
+    document.getElementById("updateEmail").value = email;
+    document.getElementById("updateAddress").value = address;
+  }
+
+  function updateContact() {
+    const form = document.getElementById("updateContactForm");
+    const id = form.getAttribute("data-id");
+
+    const name = document.getElementById("updateName").value;
+    const phoneNumber = document.getElementById("updatePhoneNumber").value;
+    const email = document.getElementById("updateEmail").value;
+    const address = document.getElementById("updateAddress").value;
+
+    fetch(`/contact/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, phoneNumber, email, address }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+        $("#updateContactModal").modal("hide");
+        location.reload();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
+  function deleteContact(button) {
+    const row = button.closest("tr");
+    const id = row.getAttribute("data-id");
+
+    // Send the DELETE request to the server
+    fetch(`/contact/${id}`, {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+        // Remove the deleted row from the UI
+        row.remove();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        // Handle error
+      });
+  }
+
+  function closeErrorModal() {
+    $("#addContactErrorModal").alert("close");
+  }
+
+  function openDetailsModal(name) {
+    // Fetch the contact details using AJAX (you can use fetch or any other library)
+    fetch(`/detail/${name}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then((contact) => {
+        // Update the modal content with the fetched details
+        document.getElementById(
+          "detailsContactModalTitle"
+        ).innerText = `Details for ${contact.name}`;
+        document.getElementById("detailsName").innerText = contact.name;
+        document.getElementById("detailsPhoneNumber").innerText =
+          contact.phoneNumber;
+        document.getElementById("detailsEmail").innerText = contact.email;
+        document.getElementById("detailsAddress").innerText = contact.address;
+
+        // Show the modal
+        $("#detailsContactModal").modal("show");
+      })
+      .catch((error) => {
+        console.error("Error fetching contact details:", error);
+      });
+  }
+</script>
