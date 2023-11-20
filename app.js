@@ -50,27 +50,32 @@ async function writeData(data) {
   });
 }
 
-// GET Home
-// Example: Add logging to your route handlers
 app.get("/", (req, res) => {
     try {
-        // Your existing code
-        res.render("page/home", {nama: "Uzi", title: "Home"});
+        res.render("page/home", { nama: "Uzi", title: "Home" });
     } catch (error) {
         console.error("Error in / route:", error);
         res.status(500).send("Internal Server Error");
     }
 });
 
-// GET About
 app.get("/about", (req, res) => {
-    res.render("page/about", {title: 'About'})
+    try {
+        res.render("page/about", { title: "About" });
+    } catch (error) {
+        console.error("Error in /about route:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
-// GET, POST, PUT, DELETE, DETAIL Contact
-app.get('/contact', async (req, res) => {
-  const data = await readData();
-  res.render('page/contact', { data, errors: [], title: "Contact" });
+app.get("/contact", async (req, res) => {
+    try {
+        const data = await readData();
+        res.render("page/contact", { data, errors: [], title: "Contact" });
+    } catch (error) {
+        console.error("Error in /contact route:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 const isAlphaOnly = (value) => {
