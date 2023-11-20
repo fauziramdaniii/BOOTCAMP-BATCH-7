@@ -23,8 +23,9 @@ const schema = Joi.object({
   name: Joi.string().required(),
   phoneNumber: Joi.string().required(),
   email: Joi.string().email().required(),
-  address: Joi.string().required(),
+  address: Joi.string().allow('').optional(), // Allow an empty string or make it optional
 });
+
 
 // readFile
 function readData() {
@@ -62,63 +63,87 @@ app.get("/about", (req, res) => {
 // GET, POST, PUT, DELETE, DETAIL Contact
 app.get('/contact', async (req, res) => {
   const data = await readData();
-  res.render('page/contact', { data, title: "Contact" });
+  res.render('page/contact', { data, errors: [], title: "Contact" });
 });
 
+const isAlphaOnly = (value) => {
+  const regex = /^[A-Za-z\s]+$/;
+  return regex.test(value);
+};
+
 app.post('/contact', [
+  check("name", "Name should contain only letters and spaces").custom(isAlphaOnly),
   check("email", "Email is not valid").isEmail(),
   check("phoneNumber", "Phone Number is not valid").isMobilePhone(),
 ], async (req, res) => {
-  const errors = validationResult(req);
-  console.log(errors);
-  if (!errors.isEmpty()) {
-    return res.render('page/contact', {
-      data: await readData(),
-      title: "Contact",
-      errors: errors.array(), // Use errors.array() to get an array of error objects
-    });
-  }
-  console.log(errors);
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.json({ success: false, errors: errors.array() });
+    }
+
     const newData = {
       name: req.body.name,
       phoneNumber: req.body.phoneNumber,
       email: req.body.email,
-      address: req.body.address,
+      address: req.body.address || '', // Use an empty string if address is not provided
     };
-    await schema.validateAsync(newData);
+
+    // Check if the name already exists
     const data = await readData();
+    const nameExists = data.some(contact => contact.name === newData.name);
+    if (nameExists) {
+      return res.status(400).json({ success: false, errors: [{ msg: "Name already exists" }] });
+    }
+
+    await schema.validateAsync(newData);
+
     data.push(newData);
     await writeData(data);
-    return res.redirect('/contact');
+
+    res.json({ success: true });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ success: false, error: error.message });
   }
 });
 
-app.put('/contact/:name', async (req, res) => {
+app.put('/contact/:name', [
+  check("name", "Name should contain only letters").custom(isAlphaOnly),
+  check("email", "Email is not valid").isEmail(),
+  check("phoneNumber", "Phone Number is not valid").isMobilePhone(),
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.json({ success: false, errors: errors.array() });
+    }
+
     const name = req.params.name;
     const updatedData = req.body;
+
+    // Check if the updated name already exists
+    const data = await readData();
+    const nameExists = data.some(contact => contact.name === updatedData.name && contact.name !== name);
+    if (nameExists) {
+      return res.json({ success: false, errors: [{ msg: "Name already exists" }] });
+    }
+
     await schema.validateAsync(updatedData);
 
-    const data = await readData();
     const index = data.findIndex((contact) => contact.name === name);
-
     if (index === -1) {
-      res.status(404).json({ error: 'Contact not found' });
-    } else {
-      data[index] = { ...data[index], ...updatedData };
-      await writeData(data);
-
-      // Set Content-Type header
-      res.setHeader('Content-Type', 'application/json');
-      res.json({ message: 'Contact updated successfully', data: data[index] });
+      return res.status(404).json({ success: false, error: 'Contact not found' });
     }
+
+    data[index] = { ...data[index], ...updatedData };
+    await writeData(data);
+
+    res.json({ success: true, message: 'Contact updated successfully', data: data[index] });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ success: false, error: error.message });
   }
 });
+
 
 app.delete('/contact/:name', async (req, res) => {
   try {
