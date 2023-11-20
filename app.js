@@ -51,8 +51,15 @@ async function writeData(data) {
 }
 
 // GET Home
+// Example: Add logging to your route handlers
 app.get("/", (req, res) => {
-        res.render("page/home", {nama: "Uzi", title: "Home"})
+    try {
+        // Your existing code
+        res.render("page/home", {nama: "Uzi", title: "Home"});
+    } catch (error) {
+        console.error("Error in / route:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 // GET About
