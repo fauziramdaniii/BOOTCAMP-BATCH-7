@@ -2,12 +2,31 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const {check, validationResult} = require("express-validator")
 const {isMobilePhone, isEmail} = require("validator")
+const cors = require("cors")
 
 const client = require("./commons/connection");
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.json())
+
+const corsOptions = {
+    origin: 'http://localhost:5173',
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.use(cors(corsOptions));
+
+app.get('/contacts', (req, res) => {
+    client.query('SELECT * FROM contact', (err, result) => {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send("Internal Server Error");
+        } else {
+            console.log(result.rows);
+            res.json(result.rows);
+        }
+    });
+});
 
 app.listen(port, () => {
     console.log("server is running in port" + port);
@@ -30,17 +49,7 @@ const handleValidate = (req, res, next) => {
         next()
 }
 
-app.get('/contacts', (req, res) => {
-    client.query('SELECT * FROM contact', (err, result) => {
-        if (err) {
-            console.error(err.message);
-            res.status(500).send("Internal Server Error");
-        } else {
-            console.log(result.rows);
-            res.json(result.rows);
-        }
-    });
-});
+
 
 app.post('/contacts',[
     check("name").matches(/^[A-Za-z\s]+$/).withMessage("Name should contain only letters and spaces"),

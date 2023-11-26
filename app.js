@@ -1,55 +1,49 @@
-const fs = require("fs");
+const { Pool } = require('pg');
 const express = require("express");
 const app = express();
-const morgan = require("morgan");
 const port = 3000;
 const layoutExpress = require("express-ejs-layouts");
-const Joi = require('joi');
 const bodyParser = require("body-parser")
 const { check, validationResult } = require("express-validator");
+const {isMobilePhone, isEmail} = require("validator")
+const client = require("./commons/connection");
+const cors = require('cors');
 
-app.use(express.static('public')); // For Izin Akses Chrome
+app.use(cors());
+app.use(express.static('public')); 
 app.set('view engine', 'ejs')
 app.use(layoutExpress);
 app.set("layout", "layouts/main")
-app.use(morgan('dev'))
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-const filePath = './contact.json';
-
-const schema = Joi.object({
-  name: Joi.string().required(),
-  phoneNumber: Joi.string().required(),
-  email: Joi.string().email().required(),
-  address: Joi.string().allow('').optional(), // Allow an empty string or make it optional
+client.connect(err => {
+    if (err) {
+        console.log(err.message);
+    } else {
+        console.log("database connected");
+    }
 });
 
+const pool = new Pool({
+    host: "localhost",
+    user: "postgres",
+    port: 5432,
+    password: "P@ssw0rd",
+    database: "contact"
+});
 
-// readFile
-function readData() {
-  try {
-    const data = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
+const handleValidate = (req, res, next) => {
+    const errors = validationResult(req);
+    if(!errors.isEmpty()) {
+        return res.status(400).json({
+            errors: errors.array()})
+    }
+        next()
 }
 
-// writeFile
-async function writeData(data) {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8', (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
+// GET Home
 app.get("/", (req, res) => {
     try {
         res.render("page/home", { nama: "Uzi", title: "Home" });
@@ -59,6 +53,7 @@ app.get("/", (req, res) => {
     }
 });
 
+// GET About
 app.get("/about", (req, res) => {
     try {
         res.render("page/about", { title: "About" });
@@ -68,138 +63,130 @@ app.get("/about", (req, res) => {
     }
 });
 
-app.get("/contact", async (req, res) => {
-    try {
-        const data = await readData();
-        res.render("page/contact", { data, errors: [], title: "Contact" });
-    } catch (error) {
-        console.error("Error in /contact route:", error);
-        res.status(500).send("Internal Server Error");
-    }
+// GET Contact
+app.get('/contact', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM contact');
+    const data = result.rows;
+    res.render('page/contact', { data, errors: [], title: 'Contact' });
+  } catch (error) {
+    console.error('Error in /contacts route:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-const isAlphaOnly = (value) => {
-  const regex = /^[A-Za-z\s]+$/;
-  return regex.test(value);
-};
-
-app.post('/contact', [
-  check("name", "Name should contain only letters and spaces").custom(isAlphaOnly),
-  check("email", "Email is not valid").isEmail(),
-  check("phoneNumber", "Phone Number is not valid").isMobilePhone(),
-], async (req, res) => {
+app.post('/contacts', [
+  check('name').matches(/^[A-Za-z\s]+$/).withMessage('Name should contain only letters and spaces'),
+  check('email').isEmail().withMessage('Email is not valid'),
+  check('phone').custom(value => isMobilePhone(value, 'id-ID')).withMessage('Phone Number is not valid'),
+], handleValidate, async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.json({ success: false, errors: errors.array() });
+    const { name, phone, email, address } = req.body;
+
+    const result = await pool.query('SELECT * FROM contact WHERE name = $1', [name]);
+    if (result.rows.length > 0) {
+      return res.status(400).json({ success: false, errors: [{ msg: 'Name already exists' }] });
     }
 
-    const newData = {
-      name: req.body.name,
-      phoneNumber: req.body.phoneNumber,
-      email: req.body.email,
-      address: req.body.address || '', // Use an empty string if address is not provided
+    const query = {
+      text: 'INSERT INTO contact (name, phone, email, address) VALUES ($1, $2, $3, $4)',
+      values: [name, phone, email, address],
     };
 
-    // Check if the name already exists
-    const data = await readData();
-    const nameExists = data.some(contact => contact.name === newData.name);
-    if (nameExists) {
-      return res.status(400).json({ success: false, errors: [{ msg: "Name already exists" }] });
-    }
+    await pool.query(query);
 
-    await schema.validateAsync(newData);
-
-    data.push(newData);
-    await writeData(data);
-
-    res.json({ success: true });
+    res.status(201).json({ success: true });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    console.error('Error in /contacts POST route:', error);
+    res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });
 
-app.put('/contact/:name', [
-  check("name", "Name should contain only letters").custom(isAlphaOnly),
-  check("email", "Email is not valid").isEmail(),
-  check("phoneNumber", "Phone Number is not valid").isMobilePhone(),
+app.put('/contacts/:id', [
+  check("name").matches(/^[A-Za-z\s]+$/).withMessage("Name should contain only letters and spaces"),
+  check('email', 'Email is not valid').isEmail(),
+  check('phone').custom(value => isMobilePhone(value, 'id-ID')).withMessage('Phone Number is not valid'),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.json({ success: false, errors: errors.array() });
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const name = req.params.name;
+    const id = req.params.id;
     const updatedData = req.body;
 
-    // Check if the updated name already exists
-    const data = await readData();
-    const nameExists = data.some(contact => contact.name === updatedData.name && contact.name !== name);
+    const nameExistsQuery = 'SELECT * FROM contact WHERE name = $1 AND id <> $2';
+    const nameExistsValues = [updatedData.name, id];
+    const { rowCount: nameExists } = await pool.query(nameExistsQuery, nameExistsValues);
+
     if (nameExists) {
-      return res.json({ success: false, errors: [{ msg: "Name already exists" }] });
+      return res.json({ success: false, errors: [{ msg: 'Name already exists' }] });
     }
 
-    await schema.validateAsync(updatedData);
+    const updateQuery = 'UPDATE contact SET name = $1, email = $2, phone = $3 WHERE id = $4 RETURNING *';
+    const updateValues = [updatedData.name, updatedData.email, updatedData.phone, id];
+    const { rows: updatedContact } = await pool.query(updateQuery, updateValues);
 
-    const index = data.findIndex((contact) => contact.name === name);
-    if (index === -1) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
-    }
-
-    data[index] = { ...data[index], ...updatedData };
-    await writeData(data);
-
-    res.json({ success: true, message: 'Contact updated successfully', data: data[index] });
+    res.status(200).json({ success: true, message: 'Contact updated successfully', data: updatedContact[0] });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    console.error('Error in /contacts PUT route:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
-
-app.delete('/contact/:name', async (req, res) => {
+app.delete('/contacts/:id', async (req, res) => {
   try {
-    const name = req.params.name; // Treat it as a string
+    const id = req.params.id;
 
-    const data = await readData();
-    const index = data.findIndex((contact) => contact.name === name);
+    const query = {
+      text: 'DELETE FROM contact WHERE id = $1 RETURNING *',
+      values: [id]
+    };
 
-    if (index === -1) {
-      res.status(404).json({ error: 'Contact not found' });
-    } else {
-      const deletedContact = data.splice(index, 1)[0];
-      await writeData(data);
+    const { rows: deletedContacts } = await pool.query(query);
 
-      res.json({ message: 'Contact deleted successfully', data: deletedContact });
+    if (deletedContacts.length === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
     }
+
+    console.log(deletedContacts); 
+
+    return res.json({ message: 'Contact deleted successfully', data: deletedContacts[0] });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-app.get('/detail/:name', async (req, res) => {
+app.get('/contacts/:id', async (req, res) => {
   try {
-    const name = req.params.name;
+    const id = req.params.id;
 
-    const data = await readData();
-    const contact = data.find((contact) => contact.name === name);
+    const query = {
+      text: 'SELECT * FROM contact WHERE id = $1',
+      values: [id]
+    };
 
-    if (!contact) {
-      res.status(404).json({ error: 'Contact not found' });
-    } else {
-      res.json(contact);
+    const { rows: contact } = await pool.query(query);
+
+    if (contact.length === 0) {
+      return res.status(404).json({ error: 'Contact not found' });
     }
+
+    console.log(contact)
+
+    return res.json(contact[0]);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// LISTEN PORT
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
 
-// 404 Not Found
 app.use('/', (req, res) => {
     res.status(404);
     res.render("page/notfound", {title: "404 Not Found"})

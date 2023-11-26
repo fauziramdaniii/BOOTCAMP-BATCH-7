@@ -10,6 +10,7 @@
     Add Contact
   </button>
 
+  <!-- Show Data -->
   <table class="table">
     <thead>
       <tr>
@@ -23,14 +24,14 @@
     <tbody>
       <% data.forEach(data=> { %>
       <tr
-        data-id="<%= data.name %>"
+        data-id="<%= data.id %>"
         data-name="<%= data.name %>"
-        data-phonenumber="<%= data.phoneNumber %>"
+        data-phone="<%= data.phone %>"
         data-email="<%= data.email %>"
         data-address="<%= data.address %>"
       >
         <td><%= data.name %></td>
-        <td><%= data.phoneNumber %></td>
+        <td><%= data.phone %></td>
         <td><%= data.email %></td>
         <td><%= data.address %></td>
 
@@ -40,7 +41,8 @@
             class="btn btn-warning"
             data-toggle="modal"
             data-target="#updateContactModal"
-            onclick="populateUpdateForm(this)"
+            onclick="updateContactModal(this)"
+            data-contactid="<%= data.id %>"
           >
             Update
           </button>
@@ -59,7 +61,7 @@
           <button
             type="button"
             class="btn btn-info"
-            onclick="openDetailsModal(`<%= data.name %>`)"
+            onclick="openDetailsModal(`<%= data.id %>`)"
             data-toggle="modal"
             data-target="#detailsContactModal"
           >
@@ -114,14 +116,12 @@
               />
             </div>
             <div class="form-group">
-              <label for="phoneNumber" class="col-form-label"
-                >Phone Number</label
-              >
+              <label for="phone" class="col-form-label">Phone Number</label>
               <input
                 type="text"
                 class="form-control"
-                id="phoneNumber"
-                name="phoneNumber"
+                id="phone"
+                name="phone"
                 required
               />
             </div>
@@ -184,20 +184,16 @@
             id="alert-update-contact"
             style="display: none"
           ></ul>
-          <form
-            id="updateContactForm"
-            action="/contact/<%= data._name %>"
-            data-id=""
-          >
+
+          <form id="updateContactForm" data-contactid="<%= data[0].id %>">
+            <input type="hidden" id="updateContactId" name="updateContactId" />
             <div class="form-group">
               <label for="name" class="col-form-label">Name</label>
               <input type="text" class="form-control" id="updateName" />
             </div>
             <div class="form-group">
-              <label for="phoneNumber" class="col-form-label"
-                >Phone Number</label
-              >
-              <input type="text" class="form-control" id="updatePhoneNumber" />
+              <label for="phone" class="col-form-label">Phone Number</label>
+              <input type="text" class="form-control" id="updatePhone" />
             </div>
             <div class="form-group">
               <label for="email" class="col-form-label">Email</label>
@@ -255,7 +251,7 @@
             <tbody>
               <tr>
                 <td id="detailsName"></td>
-                <td id="detailsPhoneNumber"></td>
+                <td id="detailsphone"></td>
                 <td id="detailsEmail"></td>
                 <td id="detailsAddress"></td>
               </tr>
@@ -273,21 +269,137 @@
   </div>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script>
-  function populateUpdateForm(button) {
+  function updateContactModal(button) {
+    const contactId = button.getAttribute("data-contactid");
     const row = button.closest("tr");
-    const id = row.getAttribute("data-id");
     const name = row.getAttribute("data-name");
-    const phoneNumber = row.getAttribute("data-phonenumber");
+    const phone = row.getAttribute("data-phone");
     const email = row.getAttribute("data-email");
     const address = row.getAttribute("data-address");
 
-    document.getElementById("updateContactForm").setAttribute("data-id", id);
+    // Set the current name as a data attribute
+    document
+      .getElementById("updateContactForm")
+      .setAttribute("data-currentname", name);
+
+    // Set values in the form
+    document.getElementById("updateContactId").value = contactId;
     document.getElementById("updateName").value = name;
-    document.getElementById("updatePhoneNumber").value = phoneNumber;
+    document.getElementById("updatePhone").value = phone;
     document.getElementById("updateEmail").value = email;
     document.getElementById("updateAddress").value = address;
+
+    // Show the modal
+    $("#updateContactModal").modal("show");
   }
+
+  function updateContact() {
+    const form = document.getElementById("updateContactForm");
+    const id = form.getAttribute("data-contactid");
+    const currentName = form.getAttribute("data-currentname");
+
+    if (!id) {
+      console.error("Error: Contact ID is empty");
+      return;
+    }
+
+    const name = document.getElementById("updateName").value;
+    const phone = document.getElementById("updatePhone").value;
+    const email = document.getElementById("updateEmail").value;
+    const address = document.getElementById("updateAddress").value;
+
+    console.log("ID:", id);
+    console.log("Name:", name);
+    console.log("Phone:", phone);
+    console.log("Email:", email);
+    console.log("Address:", address);
+
+    if (name !== currentName) {
+      fetch(`/contacts/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, phone, email, address }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          if (data.success) {
+            $("#updateContactModal").modal("hide");
+            Swal.fire({
+              title: "Deleted!",
+              text: "Contact has been Update successfully.",
+              icon: "success",
+              showConfirmButton: false,
+              timer: 3000, // Change this value as needed
+            });
+            setTimeout(function () {
+              window.location.reload();
+            }, 5000);
+          } else {
+            if (data.errors && Array.isArray(data.errors)) {
+              $("#alert-update-contact").show();
+              $("#alert-update-contact").empty();
+              data.errors.forEach((error) => {
+                $("#alert-update-contact").append(`<li>${error.msg}</li>`);
+              });
+            } else {
+              console.error("Unexpected response format:", data);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    } else {
+      fetch(`/contacts/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, phone, email, address }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          if (data.success) {
+            $("#updateContactModal").modal("hide");
+            Swal.fire({
+              title: "Deleted!",
+              text: "Contact has been Update successfully.",
+              icon: "success",
+              showConfirmButton: false,
+              timer: 3000, // Change this value as needed
+            });
+            setTimeout(function () {
+              window.location.reload();
+            }, 5000);
+          } else {
+            if (data.errors && Array.isArray(data.errors)) {
+              $("#alert-update-contact").show();
+              $("#alert-update-contact").empty();
+              data.errors.forEach((error) => {
+                $("#alert-update-contact").append(`<li>${error.msg}</li>`);
+              });
+            } else {
+              console.error("Unexpected response format:", data);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+  }
+
+  $(document).ready(function () {
+    $("#updateContactModal").on("hide.bs.modal", function () {
+      $("#alert-update-contact").hide();
+    });
+  });
 
   document.addEventListener("DOMContentLoaded", function () {
     const addContactButton = document.querySelector(
@@ -302,22 +414,31 @@
   function addContact() {
     const form = document.getElementById("addContactForm");
     const name = form.querySelector("#name").value;
-    const phoneNumber = form.querySelector("#phoneNumber").value;
+    const phone = form.querySelector("#phone").value;
     const email = form.querySelector("#email").value;
     const address = form.querySelector("#address").value;
 
-    fetch("/contact", {
+    fetch("/contacts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, phoneNumber, email, address }),
+      body: JSON.stringify({ name, phone, email, address }),
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
           $("#addContactModal").modal("hide");
-          location.reload();
+          Swal.fire({
+            title: "Deleted!",
+            text: "Contact has been Add successfully.",
+            icon: "success",
+            showConfirmButton: false,
+            timer: 3000, // Change this value as needed
+          });
+          setTimeout(function () {
+            window.location.reload();
+          }, 5000);
         } else {
           if (data.errors && Array.isArray(data.errors)) {
             $("#alert-add-contact").show();
@@ -335,60 +456,30 @@
       });
   }
 
-  function updateContact() {
-    const form = document.getElementById("updateContactForm");
-    const id = form.getAttribute("data-id");
-    const name = document.getElementById("updateName").value;
-    const phoneNumber = document.getElementById("updatePhoneNumber").value;
-    const email = document.getElementById("updateEmail").value;
-    const address = document.getElementById("updateAddress").value;
-
-    fetch(`/contact/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, phoneNumber, email, address }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        if (data.success) {
-          $("#updateContactModal").modal("hide");
-          location.reload();
-        } else {
-          if (data.errors && Array.isArray(data.errors)) {
-            $("#alert-update-contact").show();
-            $("#alert-update-contact").empty();
-            data.errors.forEach((error) => {
-              $("#alert-update-contact").append(`<li>${error.msg}</li>`);
-            });
-          } else {
-            console.error("Unexpected response format:", data);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }
-
-  $(document).ready(function () {
-    $("#updateContactModal").on("hide.bs.modal", function () {
-      $("#alert-update-contact").hide();
-    });
-  });
-
   function deleteContact(button) {
     const row = button.closest("tr");
     const id = row.getAttribute("data-id");
 
-    fetch(`/contact/${id}`, {
+    fetch(`/contacts/${id}`, {
       method: "DELETE",
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         console.log("Success:", data);
+
+        Swal.fire({
+          title: "Deleted!",
+          text: "Contact has been deleted successfully.",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 1500, // Change this value as needed
+        });
+
         row.remove();
       })
       .catch((error) => {
@@ -397,8 +488,8 @@
       });
   }
 
-  function openDetailsModal(name) {
-    fetch(`/detail/${name}`)
+  function openDetailsModal(id) {
+    fetch(`/contacts/${id}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -406,13 +497,11 @@
         return response.json();
       })
       .then((contact) => {
-        // Update the modal content with the fetched details
         document.getElementById(
           "detailsContactModalTitle"
         ).innerText = `Details for ${contact.name}`;
         document.getElementById("detailsName").innerText = contact.name;
-        document.getElementById("detailsPhoneNumber").innerText =
-          contact.phoneNumber;
+        document.getElementById("detailsphone").innerText = contact.phone;
         document.getElementById("detailsEmail").innerText = contact.email;
         document.getElementById("detailsAddress").innerText = contact.address;
 
